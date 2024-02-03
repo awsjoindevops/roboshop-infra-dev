@@ -1,18 +1,25 @@
-pipeline {
+    pipeline {
     agent {
         node {
-            label 'AGENT-A'
+            label 'AGENT-1'           
         }
     }
+    environment { 
+            GREETING='HELLo JENKINS.'
+        }
     options {
-        ansiColor('xterm')
-        // timeout(time: 1, unit: 'HOURS')
-        // disableConcurrentBuilds()
-    }
-    parameters {
-        choice(name: 'action', choices: ['apply', 'destroy'], description: 'Pick something')
-    }
-    // build
+            // Timeout counter starts AFTER agent is allocated
+            timeout(time: 1, unit: 'HOURS')
+            disableConcurrentBuilds()
+        }
+
+
+        parameters {            
+
+            choice(name: 'CHOICE', choices: ['One', 'Two', 'Three'], description: 'Pick something')
+           
+        }
+
     stages {
         stage('Init') {
             steps {
