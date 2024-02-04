@@ -17,7 +17,7 @@
 
         parameters {            
 
-            choice(name: 'CHOICE', choices: ['One', 'Two', 'Three'], description: 'Pick something')
+               choice(name: 'action', choices: ['apply', 'destroy'], description: 'Pick something')
            
         }
 
