@@ -45,15 +45,7 @@
                 """
             }
         }
-
-        stage('Plan') {
-            steps {
-                sh """
-                    cd 01-vpc
-                    terraform plan
-                """
-            }
-        }
+        
        stage('DB ALB') {
             parallel {
                 stage('DB') {
