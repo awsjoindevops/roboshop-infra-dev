@@ -51,7 +51,7 @@
                 stage('DB') {
                     steps {
                        sh """
-                        cd 04-databases
+                        cd 04-database
                         terraform init -reconfigure
                         terraform apply -auto-approve
                       """
