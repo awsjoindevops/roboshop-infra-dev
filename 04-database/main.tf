@@ -5,7 +5,6 @@ module "mongodb" {
   instance_type          = "t3.small"
   vpc_security_group_ids = [data.aws_ssm_parameter.mongodb_sg_id.value]
   subnet_id              = local.database_subnet_id
-  
   tags = merge(
     var.common_tags,
     {
@@ -16,7 +15,6 @@ module "mongodb" {
     }
   )
 }
-
 
 resource "null_resource" "mongodb" {
   # Changes to any instance of the cluster requires re-provisioning
@@ -33,12 +31,12 @@ resource "null_resource" "mongodb" {
     password = "DevOps321"
   }
 
-    provisioner "file" {
-      source      = "bootstrap.sh"
-      destination = "/tmp/bootstrap.sh"
-    }
+  provisioner "file" {
+    source      = "bootstrap.sh"
+    destination = "/tmp/bootstrap.sh"
+  }
 
-    provisioner "remote-exec" {
+  provisioner "remote-exec" {
     # Bootstrap script called with private_ip of each node in the cluster
     inline = [
       "chmod +x /tmp/bootstrap.sh",
@@ -47,8 +45,6 @@ resource "null_resource" "mongodb" {
   }
 }
 
-
-
 module "redis" {
   source                 = "terraform-aws-modules/ec2-instance/aws"
   ami = data.aws_ami.centos8.id
@@ -56,7 +52,6 @@ module "redis" {
   instance_type          = "t2.micro"
   vpc_security_group_ids = [data.aws_ssm_parameter.redis_sg_id.value]
   subnet_id              = local.database_subnet_id
-  
   tags = merge(
     var.common_tags,
     {
@@ -67,7 +62,6 @@ module "redis" {
     }
   )
 }
-
 
 resource "null_resource" "redis" {
   # Changes to any instance of the cluster requires re-provisioning
@@ -89,7 +83,7 @@ resource "null_resource" "redis" {
     destination = "/tmp/bootstrap.sh"
   }
 
-    provisioner "remote-exec" {
+  provisioner "remote-exec" {
     # Bootstrap script called with private_ip of each node in the cluster
     inline = [
       "chmod +x /tmp/bootstrap.sh",
@@ -98,12 +92,6 @@ resource "null_resource" "redis" {
   }
 }
 
-
-
-
-
-
-
 module "mysql" {
   source                 = "terraform-aws-modules/ec2-instance/aws"
   ami = data.aws_ami.centos8.id
@@ -111,8 +99,7 @@ module "mysql" {
   instance_type          = "t3.small"
   vpc_security_group_ids = [data.aws_ssm_parameter.mysql_sg_id.value]
   subnet_id              = local.database_subnet_id
-  iam_instance_profile = "roboshopforshell"
-
+  iam_instance_profile = "ShellScriptRoleForRoboshop"
   tags = merge(
     var.common_tags,
     {
@@ -144,7 +131,7 @@ resource "null_resource" "mysql" {
     destination = "/tmp/bootstrap.sh"
   }
 
-    provisioner "remote-exec" {
+  provisioner "remote-exec" {
     # Bootstrap script called with private_ip of each node in the cluster
     inline = [
       "chmod +x /tmp/bootstrap.sh",
@@ -153,12 +140,6 @@ resource "null_resource" "mysql" {
   }
 }
 
-
-
-
-
-
-
 module "rabbitmq" {
   source                 = "terraform-aws-modules/ec2-instance/aws"
   ami = data.aws_ami.centos8.id
@@ -166,8 +147,7 @@ module "rabbitmq" {
   instance_type          = "t3.small"
   vpc_security_group_ids = [data.aws_ssm_parameter.rabbitmq_sg_id.value]
   subnet_id              = local.database_subnet_id
-  iam_instance_profile = "roboshopforshell"
-
+  iam_instance_profile = "ShellScriptRoleForRoboshop"
   tags = merge(
     var.common_tags,
     {
@@ -199,7 +179,7 @@ resource "null_resource" "rabbitmq" {
     destination = "/tmp/bootstrap.sh"
   }
 
-    provisioner "remote-exec" {
+  provisioner "remote-exec" {
     # Bootstrap script called with private_ip of each node in the cluster
     inline = [
       "chmod +x /tmp/bootstrap.sh",
@@ -208,11 +188,12 @@ resource "null_resource" "rabbitmq" {
   }
 }
 
-
 module "records" {
   source  = "terraform-aws-modules/route53/aws//modules/records"
+
   zone_name = var.zone_name
-  records = [  
+
+  records = [
     {
       name    = "mongodb-dev"
       type    = "A"
@@ -221,25 +202,6 @@ module "records" {
         module.mongodb.private_ip,
       ]
     },
-
-    {
-      name    = "mysql-dev"
-      type    = "A"
-      ttl     = 1
-      records = [
-        module.mysql.private_ip,
-      ]
-    },
-
-    {
-      name    = "rabbitmq-dev"
-      type    = "A"
-      ttl     = 1
-      records = [
-        module.rabbitmq.private_ip,
-      ]
-    },
-
     {
       name    = "redis-dev"
       type    = "A"
@@ -248,7 +210,21 @@ module "records" {
         module.redis.private_ip,
       ]
     },
-
+    {
+      name    = "mysql-dev"
+      type    = "A"
+      ttl     = 1
+      records = [
+        module.mysql.private_ip,
+      ]
+    },
+    {
+      name    = "rabbitmq-dev"
+      type    = "A"
+      ttl     = 1
+      records = [
+        module.rabbitmq.private_ip,
+      ]
+    },
   ]
-
-  }
+}
